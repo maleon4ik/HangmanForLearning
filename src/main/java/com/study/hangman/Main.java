@@ -6,6 +6,6 @@ public class Main {
     public static void main(String[] args) {
         GameInitiator gameInitiator = new GameInitiator();
         GameManager gameManager = gameInitiator.initiate();
-        gameManager.startGame();
+        gameManager.run();
     }
 }

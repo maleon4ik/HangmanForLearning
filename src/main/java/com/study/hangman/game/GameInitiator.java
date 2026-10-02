@@ -1,11 +1,12 @@
 package com.study.hangman.game;
 
+import com.study.hangman.history.HistoryManager;
+import com.study.hangman.history.HistoryStorage;
 import com.study.hangman.userinteraction.ConsoleGetFromUser;
 import com.study.hangman.userinteraction.ConsoleShowToUser;
 import com.study.hangman.userinteraction.GetFromUser;
 import com.study.hangman.userinteraction.ShowToUser;
-import com.study.hangman.wordbank.UserWordBankManager;
-import com.study.hangman.wordbank.WordBank;
+import com.study.hangman.wordbank.UserWordBankStorage;
 
 public class GameInitiator {
 
@@ -13,15 +14,12 @@ public class GameInitiator {
         ShowToUser showToUser = new ConsoleShowToUser();
         GetFromUser getFromUser = new ConsoleGetFromUser(showToUser);
 
-        UserWordBankManager userWordBankManager = new UserWordBankManager();
-        GameSetting gameSetting = new GameSetting(showToUser, getFromUser, userWordBankManager);
-        WordBank wordBank = gameSetting.setupWordBank();
-
         Gallows gallows = new Gallows();
-        GameStateFactory gameStateFactory = new GameStateFactory(wordBank, gallows);
-        GameLoopAction gameLoopAction = new GameLoopLetterOnlyAction(showToUser, getFromUser, gallows);
+        GameSetting gameSetting = new GameSetting(showToUser, getFromUser, new UserWordBankStorage());
+        GameSessionAction gameSessionAction = new GameSessionActionWithCommands(showToUser, getFromUser, gallows);
+        HistoryManager historyManager = new HistoryManager(new HistoryStorage(showToUser));
 
-        return new GameManager(showToUser, gameStateFactory, gallows, gameLoopAction);
+        return new GameManager(showToUser, getFromUser, gallows, gameSetting, gameSessionAction, historyManager);
     }
 
 }

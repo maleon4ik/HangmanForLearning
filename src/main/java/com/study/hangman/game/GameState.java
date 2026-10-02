@@ -25,8 +25,8 @@ public class GameState {
         return "_".repeat(secretWord.length());
     }
 
-    String getSecretWord(IterationResult iterationResult) {
-        if (iterationResult.isGameOver()) {
+    String getSecretWord(boolean isGameOver) {
+        if (isGameOver) {
             return secretWord;
         }
         return null;

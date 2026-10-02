@@ -2,7 +2,7 @@ package com.study.hangman.game;
 
 import com.study.hangman.model.IterationResult;
 
-public interface GameLoopAction {
+public interface GameSessionAction {
 
     void printIterationInfo(GameState gameState);
 

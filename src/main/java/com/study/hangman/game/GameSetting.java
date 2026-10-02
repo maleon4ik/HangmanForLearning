@@ -1,90 +1,132 @@
 package com.study.hangman.game;
 
+import com.study.hangman.history.HistoryManager;
+import com.study.hangman.model.SessionInfo;
+import com.study.hangman.model.WordBankInfo;
+import com.study.hangman.model.WordBankType;
 import com.study.hangman.userinteraction.GetFromUser;
 import com.study.hangman.userinteraction.ShowToUser;
 import com.study.hangman.wordbank.DefaultWordBank;
 import com.study.hangman.wordbank.UserWordBank;
 import com.study.hangman.wordbank.WordBank;
-import com.study.hangman.wordbank.UserWordBankManager;
+import com.study.hangman.wordbank.UserWordBankStorage;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.chrono.ThaiBuddhistEra;
 
 public class GameSetting {
 
     private final ShowToUser showToUser;
     private final GetFromUser getFromUser;
-    private final UserWordBankManager userWordBankManager;
+    private final UserWordBankStorage userWordBankStorage;
 
 
-    GameSetting(ShowToUser showToUser, GetFromUser getFromUser, UserWordBankManager userWordBankManager) {
+    GameSetting(ShowToUser showToUser, GetFromUser getFromUser, UserWordBankStorage userWordBankStorage) {
         this.showToUser = showToUser;
         this.getFromUser = getFromUser;
-        this.userWordBankManager = userWordBankManager;
+        this.userWordBankStorage = userWordBankStorage;
     }
 
-    WordBank setupWordBank() {
+    WordBankInfo setupWordBank() {
         WordBank wordBank = null;
+        WordBankType wordBankType = null;
+        String path = "";
         do {
-            WordBankType type = askWordBankType();
-            wordBank = createWordBank(type);
+            WordBankSetupOption setupOption = askWordBankType();
+            switch (setupOption) {
+                case DEFAULT_WORD_BANK -> {
+                    wordBankType = WordBankType.DEFAULT_WORD_BANK;
+                    wordBank = new DefaultWordBank();
+                }
+                case USER_WORD_BANK -> {
+                    wordBankType = WordBankType.USER_WORD_BANK;
+                    path = askFilePath(FileOperation.LOAD);
+                    if (path.isEmpty()) {
+                        continue;
+                    }
+                    try {
+                        wordBank = userWordBankStorage.loadUserWordBankFromJson(path);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                case NEW_WORD_BANK -> {
+                    wordBankType = WordBankType.USER_WORD_BANK;
+                    path = askFilePath(FileOperation.CREATE);
+                    String[] wordBankArray;
+                    do {
+                        wordBankArray = askWordsStringArray();
+                    } while (wordBankArray.length == 0);
+                    try {
+                        userWordBankStorage.saveUserWordBankToJson(new UserWordBank(wordBankArray), path);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    showToUser.showStringLn("You successfully saved you word bank save file to " + Path.of(path).toAbsolutePath());
+                    try {
+                        wordBank = userWordBankStorage.loadUserWordBankFromJson(path);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         } while (wordBank == null);
-        return wordBank;
+        return new WordBankInfo(
+                wordBankType,
+                wordBank,
+                path
+        );
     }
 
-    private WordBankType askWordBankType() {
-        WordBankType result = null;
+    WordBankInfo setupWordBank(SessionInfo sessionInfo) throws IOException {
+        WordBankType wordBankType = sessionInfo.wordBankType();
+        WordBank wordBank;
+        String path = sessionInfo.path();
+        if (sessionInfo.wordBankType() == WordBankType.USER_WORD_BANK) {
+            wordBank = userWordBankStorage.loadUserWordBankFromJson(path);
+        } else {
+            wordBank = new DefaultWordBank();
+        }
+        return new WordBankInfo(
+                wordBankType,
+                wordBank,
+                path
+        );
+    }
+
+    private WordBankSetupOption askWordBankType() {
+        WordBankSetupOption result = null;
         do {
             showToUser.showStringLn("Which word bank would you like to use?");
             switch (getFromUser.getChoice("Default word bank", "Saved word bank", "Create new word bank")) {
                 case (1) -> {
-                    result = WordBankType.DEFAULT_WORD_BANK;
+                    result = WordBankSetupOption.DEFAULT_WORD_BANK;
                 }
                 case (2) -> {
-                    result = WordBankType.JSON_WORD_BANK;
+                    result = WordBankSetupOption.USER_WORD_BANK;
                 }
                 case (3) -> {
-                    result = WordBankType.NEW_WORD_BANK;
+                    result = WordBankSetupOption.NEW_WORD_BANK;
                 }
             };
         } while (result == null);
         return result;
     }
 
-    private WordBank createWordBank(WordBankType type) {
-        switch (type) {
-            case DEFAULT_WORD_BANK -> {
-                return new DefaultWordBank();
-            }
-            case JSON_WORD_BANK -> {
-                String userPath = askFilePath(FileOperation.LOAD);
-                if (userPath == null) {
-                    return null;
-                }
-                return userWordBankManager.loadUserWordBankFromJson(userPath);
-            }
-            case NEW_WORD_BANK -> {
-                String userPath = askFilePath(FileOperation.CREATE);
-                if (userPath == null) {
-                    return null;
-                }
-                String[] wordBankArray = askWordsStringArray();
-                UserWordBank wordBank = new UserWordBank(wordBankArray);
-                userWordBankManager.saveUserWordBankToJson(wordBank, userPath);
-                showToUser.showStringLn("You successfully saved you word bank save file to " + userPath);
-            }
-        }
-        return null;
-    }
-
     private String askFilePath(FileOperation fileOperation) {
         String userPath;
         do {
-            showToUser.showStringLn("Enter file path or `cancel` if you want to cancel.");
+            showToUser.showStringLn("Enter file path or `/cancel` if you want to cancel.");
             userPath = getFromUser.getString();
-            if (userPath.equalsIgnoreCase("cancel")) {
-                return null;
+            if (userPath.equalsIgnoreCase("/cancel")) {
+                return "";
             }
             if (isValidPath(userPath, fileOperation)) {
+                userPath = userPath.replace(" ", "-");
                 return userPath;
             }
         } while (true);
@@ -97,6 +139,12 @@ public class GameSetting {
         }
         if (!userPath.endsWith(".json")) {
             showToUser.showStringLn("File must be .json type");
+            return false;
+        }
+        try {
+            Paths.get(userPath);
+        } catch (InvalidPathException e) {
+            showToUser.showStringLn("File path is bad: " + userPath);
             return false;
         }
 
@@ -136,13 +184,13 @@ public class GameSetting {
     }
 
     private String[] askWordsStringArray() {
-        showToUser.showStringLn("You are creating a new word bank");
+        showToUser.showStringLn("You are creating a new word bank. You must enter at least 1 word");
         return getFromUser.getConditionedStringArray("^[\\p{L}-]+$");
     }
 
-    private enum WordBankType {
+    private enum WordBankSetupOption {
         DEFAULT_WORD_BANK,
-        JSON_WORD_BANK,
+        USER_WORD_BANK,
         NEW_WORD_BANK
     }
 

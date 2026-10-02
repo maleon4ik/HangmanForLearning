@@ -70,9 +70,9 @@ public class ConsoleGetFromUser implements GetFromUser {
     public String[] getConditionedStringArray(String regexToMatch) {
         List<String> userWords = new ArrayList<>();
         do {
-            showToUser.showStringLn("Type next word. If finished, type `stop!`");
+            showToUser.showStringLn("Type next word. If finished, type `/stop`");
             String userInput = getString();
-            if (userInput.trim().equals("stop!")) {
+            if (userInput.trim().equals("/stop")) {
                 break;
             }
             if (!userInput.matches("^[\\p{L}-]+$")) {
