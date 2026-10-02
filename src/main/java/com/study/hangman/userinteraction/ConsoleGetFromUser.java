@@ -101,6 +101,10 @@ public class ConsoleGetFromUser implements GetFromUser {
                 throw new RuntimeException("Unexpected error", e);
             }
 
+            if (userChoice < 1 || userChoice > choices.length) {
+                showToUser.showStringLn("Only integers from 1 to " + choices.length + " are accepted");
+            }
+
         } while (userChoice < 1 || userChoice > choices.length);
         return userChoice;
     }

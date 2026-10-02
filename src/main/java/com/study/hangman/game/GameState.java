@@ -1,7 +1,5 @@
 package com.study.hangman.game;
 
-import com.study.hangman.model.IterationResult;
-
 import java.util.*;
 
 public class GameState {
@@ -12,6 +10,7 @@ public class GameState {
     private final StringBuilder userWord;
     private final List<Character> lettersUsed;
     private int mistakesMade;
+    private boolean isGameOver;
 
     GameState(String secretWord, Gallows gallows) {
         this.gallows = gallows;
@@ -19,13 +18,14 @@ public class GameState {
         this.userWord = new StringBuilder(createUserWord());
         this.lettersUsed = new ArrayList<>();
         this.mistakesMade = 0;
+        this.isGameOver = false;
     }
 
     private String createUserWord() {
         return "_".repeat(secretWord.length());
     }
 
-    String getSecretWord(boolean isGameOver) {
+    String getSecretWord() {
         if (isGameOver) {
             return secretWord;
         }
@@ -49,6 +49,7 @@ public class GameState {
         int firstIndexOfLetter = secretWord.indexOf(letter);
         if (firstIndexOfLetter == -1) {
             mistakesMade++;
+            isGameOver = checkGameOver();
             return false;
         }
         for (int i = firstIndexOfLetter; i < secretWord.length(); i++) {
@@ -56,11 +57,16 @@ public class GameState {
                 userWord.replace(i, i + 1, String.valueOf(letter));
             }
         }
+        isGameOver = checkGameOver();
         return true;
     }
 
-    public boolean isGameOver() {
+    private boolean checkGameOver() {
         return isWon() || (mistakesMade == gallows.getMaxMistakes());
+    }
+
+    public boolean isGameOver() {
+        return isGameOver;
     }
 
     public boolean isWon() {

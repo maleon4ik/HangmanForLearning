@@ -18,7 +18,6 @@ public class UserWordBankStorage {
         }
         Files.createDirectories(pathPath.toAbsolutePath().getParent());
         Files.createFile(pathPath);
-        File file = new File(path);
         mapper.writeValue(new File(path), userWordBank);
     }
 

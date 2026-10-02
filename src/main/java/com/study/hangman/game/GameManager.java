@@ -5,12 +5,9 @@ import com.study.hangman.model.*;
 import com.study.hangman.userinteraction.GetFromUser;
 import com.study.hangman.userinteraction.ShowToUser;
 import com.study.hangman.wordbank.DefaultWordBank;
-import com.study.hangman.wordbank.UserWordBankStorage;
 import com.study.hangman.wordbank.WordBank;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class GameManager {
@@ -38,9 +35,7 @@ public class GameManager {
             showToUser.showStringLn("\n========HANGMAN GAME========");
             int userChoice = getFromUser.getChoice("Setup and Play", "Play with Previous Settings", "Exit");
             switch (userChoice) {
-                case 1 -> {
-                    wordBankInfo = gameSetting.setupWordBank();
-                }
+                case 1 -> wordBankInfo = gameSetting.setupWordBank();
                 case 2 -> {
                     if (historyManager.getHistory().isEmpty()) {
                         showToUser.showStringLn("History is empty, nothing to load");
@@ -60,13 +55,11 @@ public class GameManager {
                     showToUser.showStringLn("Thank you for playing hangman");
                     return;
                 }
-                default -> {
-                    wordBankInfo = new WordBankInfo(
-                            WordBankType.DEFAULT_WORD_BANK,
-                            new DefaultWordBank(),
-                            ""
-                    );
-                }
+                default -> wordBankInfo = new WordBankInfo(
+                        WordBankType.DEFAULT_WORD_BANK,
+                        new DefaultWordBank(),
+                        ""
+                );
             }
             WordBankType wordBankType = wordBankInfo.wordBankType();
             WordBank wordBank = wordBankInfo.wordBank();
@@ -85,18 +78,19 @@ public class GameManager {
             if (Objects.requireNonNull(wordBankType) == WordBankType.USER_WORD_BANK) {
                 sessionInfo = SessionInfo.userBank(
                         gameState.getUserWord(),
-                        gameState.getSecretWord(true),
+                        gameState.getSecretWord(),
                         gameOutcome == GameOutcome.WON,
                         wordBankInfo.path()
                 );
             } else {
                 sessionInfo = SessionInfo.defaultBank(
                         gameState.getUserWord(),
-                        gameState.getSecretWord(true),
+                        gameState.getSecretWord(),
                         gameOutcome == GameOutcome.WON
                 );
             }
             historyManager.addSession(sessionInfo);
+            historyManager.saveHistoryToSaveFile();
         }
     }
 

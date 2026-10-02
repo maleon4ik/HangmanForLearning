@@ -13,18 +13,25 @@ public class HistoryManager {
 
     public HistoryManager(HistoryStorage historyStorage) {
         this.historyStorage = historyStorage;
-        this.history = getHistory();
+        this.history = getHistoryFromSaveFile();
     }
 
     public void addSession(SessionInfo sessionInfo) {
-        if (history.size() >= 100) {
+        if (history.size() >= MAX_HISTORY_SIZE) {
             history.removeFirst();
         }
         history.add(sessionInfo);
-        historyStorage.saveHistory(history);
     }
 
     public List<SessionInfo> getHistory() {
+        return List.copyOf(history);
+    }
+
+    public void saveHistoryToSaveFile() {
+        historyStorage.saveHistory(history);
+    }
+
+    public List<SessionInfo> getHistoryFromSaveFile() {
         return historyStorage.loadHistory();
     }
 

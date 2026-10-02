@@ -1,6 +1,5 @@
 package com.study.hangman.game;
 
-import com.study.hangman.history.HistoryManager;
 import com.study.hangman.model.SessionInfo;
 import com.study.hangman.model.WordBankInfo;
 import com.study.hangman.model.WordBankType;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.chrono.ThaiBuddhistEra;
 
 public class GameSetting {
 
@@ -103,16 +101,10 @@ public class GameSetting {
         do {
             showToUser.showStringLn("Which word bank would you like to use?");
             switch (getFromUser.getChoice("Default word bank", "Saved word bank", "Create new word bank")) {
-                case (1) -> {
-                    result = WordBankSetupOption.DEFAULT_WORD_BANK;
-                }
-                case (2) -> {
-                    result = WordBankSetupOption.USER_WORD_BANK;
-                }
-                case (3) -> {
-                    result = WordBankSetupOption.NEW_WORD_BANK;
-                }
-            };
+                case (1) -> result = WordBankSetupOption.DEFAULT_WORD_BANK;
+                case (2) -> result = WordBankSetupOption.USER_WORD_BANK;
+                case (3) -> result = WordBankSetupOption.NEW_WORD_BANK;
+            }
         } while (result == null);
         return result;
     }

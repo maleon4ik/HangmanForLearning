@@ -23,15 +23,11 @@ public class GameSessionActionWithCommands implements GameSessionAction {
     @Override
     public void printIterationInfo(GameState gameState) {
         showToUser.showString("Parts left:\t\t\t\t");
-        Arrays.stream(gallows.getPartsLeft(gameState.getMistakesMade())).forEach((String part) -> {
-            showToUser.showString(part + "\t\t");
-        });
+        Arrays.stream(gallows.getPartsLeft(gameState.getMistakesMade())).forEach((String part) -> showToUser.showString(part + "\t\t"));
         showToUser.showStringLn("");
 
         showToUser.showString("Parts hanging:\t\t\t");
-        Arrays.stream(gallows.getPartsUsed(gameState.getMistakesMade())).forEach((String part) -> {
-            showToUser.showString(part + "\t\t");
-        });
+        Arrays.stream(gallows.getPartsUsed(gameState.getMistakesMade())).forEach((String part) -> showToUser.showString(part + "\t\t"));
         showToUser.showStringLn("");
 
         showToUser.showStringLn("Your current word is:\t" + gameState.getUserWord());
@@ -84,13 +80,13 @@ public class GameSessionActionWithCommands implements GameSessionAction {
     @Override
     public void printWinInfo(GameState gameState, IterationResult iterationResult) {
         showToUser.showStringLn("Congratulations, you won!");
-        showToUser.showStringLn("The secret word was " + gameState.getSecretWord(iterationResult.isGameOver()));
+        showToUser.showStringLn("The secret word was " + gameState.getSecretWord());
     }
 
     @Override
     public void printLoseInfo(GameState gameState, IterationResult iterationResult) {
         showToUser.showStringLn("You lost");
-        showToUser.showStringLn("The secret word was " + gameState.getSecretWord(iterationResult.isGameOver()));
+        showToUser.showStringLn("The secret word was " + gameState.getSecretWord());
     }
 
 
